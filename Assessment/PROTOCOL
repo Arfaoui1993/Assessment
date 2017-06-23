@@ -1,3 +1,24 @@
-YOUR PROTOCOL DEFINITION GOES HERE
+//The KIWI.KI Embedded Hiring Assessment
+//author: Arfaoui Aymen
+//date: 22/06/2017
+//
+//--------------------------------------------------------------------------------------------
+/**
+The first byte of data sent from backend to gateway or from gateway to sensor should contain
+on of the commands that are defined in here
+*/
+//--------------------------------------------------------------------------------------------
 
-aaa
+
+//-----------------------------
+// Commands Common Dictionary
+//-----------------------------
+# define PING_GATEWAY					0x01
+# define PING_SENSOR					0x02
+# define RESTART_SENSOR					0x04
+# define RESTART_GATEWAY				0x05
+# define ADD_NEWKI_TO_SENSOR				0x08
+# define DELETE_KI					0x0A
+# define OPEN_DOOR					0x0F
+# define ACK_BACKEND					0x11
+# define BREAK_COUNTER					100
