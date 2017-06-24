@@ -21,79 +21,78 @@ All starting bits should contain
 //--------------
 		 Ping Pocket:command+ping data
 Backend ------------------------------> Gateway 
-					ACK
-		<------------------------------
+		      ACK
+	<------------------------------
 				
 
 
 //--------------
 // Ping Sensor
 //--------------
-		 Ping Pocket: command+ping data				   Command
-Backend ------------------------------> Gateway ------------------------> Sensor
-					ACK									ACK
-		<------------------------------			<------------------------
-													4 pockets of Ping		
-												------------------------->
-					ACK									ACK
-		<------------------------------			<------------------------
-				pocket of Pong			  		4 pockets of Pong		
-		<------------------------------			<-------------------------		
+	 Ping Pocket: command+ping data			   Command
+Backend ------------------------------> Gateway ------------------------> Sensor						            			      ACK				ACK
+	<------------------------------		<------------------------
+							4 pockets of Ping		
+						------------------------->
+		      ACK				ACK
+	<------------------------------		<------------------------
+		pocket of Pong			    4 pockets of Pong		
+	<------------------------------		<-------------------------		
 
 
 //--------------
 // Restart Gateway
 //--------------
-		  Pocket: command restart
+	    Pocket: command restart
 Backend ------------------------------> Gateway 
 
 
 //--------------
 // Restart Sensor
 //--------------
-		  Pocket: command restart					command restart
+	  Pocket: command restart		     command restart
 Backend ------------------------------> Gateway ------------------------> Sensor
 
 
 //--------------
 // Add new ki to Sensor
 //--------------
-		    Pocket: command only                     command
+	 Pocket: command only   	                command
 Backend ------------------------------> Gateway ------------------------> Sensor
-					ACK									ACK
-		<------------------------------			<------------------------
-				New Ki data							New Ki data in pockets 
-		------------------------------>			<------------------------
-					ACK					  		 		ACK		
-		<------------------------------			<-------------------------	
+			 ACK		       		ACK
+	<------------------------------		<------------------------
+			New Ki data			New Ki data in pockets 
+	------------------------------>		<------------------------
+			 ACK		  		ACK		
+	<------------------------------		<-------------------------	
 !!When sending newki data to sensor, the backend should send 2 data pockets of 128 bytes, 
 the first contain only the command.The second contain data
 
 //--------------
 // Delete new ki of Sensor
 //--------------
-		    Pocket: command only                       command
+	 Pocket: command only                       command
 Backend ------------------------------> Gateway ------------------------> Sensor
-					ACK									ACK
-		<------------------------------			<------------------------
+			ACK				ACK
+	<------------------------------		<------------------------
 
 
 //--------------
 // Open door to Sensor
 //--------------
-		    Pocket: command only                       command
+	  Pocket: command only                       command
 Backend ------------------------------> Gateway ------------------------> Sensor
-					ACK									ACK
-		<------------------------------			<------------------------
+			ACK				ACK
+	<------------------------------		<------------------------
 
 
 //--------------
 // Close door of Sensor
 //--------------
-		    Pocket: command only                       command
+	    Pocket: command only                       command
 Backend ------------------------------> Gateway ------------------------> Sensor
-					ACK									ACK
-		<------------------------------			<------------------------
+			ACK				ACK
+	<------------------------------		<------------------------
 
 
 
@@ -103,13 +102,13 @@ Backend ------------------------------> Gateway ------------------------> Sensor
 # define PING_GATEWAY					0x01
 # define PING_SENSOR					0x02
 
-# define PINGBYTE						0x03
+# define PINGBYTE					0x03
 # define RESTART_SENSOR					0x04
 # define RESTART_GATEWAY				0x05
-# define ADD_NEWKI_TO_SENSOR			0x08
+# define ADD_NEWKI_TO_SENSOR				0x08
 
-# define DELETE_KI						0x0A
-# define OPEN_DOOR						0x0F
-# define CLOSE_DOOR						0x0F
+# define DELETE_KI					0x0A
+# define OPEN_DOOR					0x0F
+# define CLOSE_DOOR					0x0F
 # define ACK_BACKEND					0x11
 # define GATEWAY_TIMEOUT_COUNTER		100

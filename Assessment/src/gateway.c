@@ -37,7 +37,7 @@ void handle_communication(void)
 
 	// Handler should check incoming data from backend and from the sensor, data received from the backend can either go to the gateway or 		// go to the sensor. Data received from the sensor must go back to the backend through the gateway(it can be a pong(after ping), 	 // an acknowledgment,...)
 
-	// Incoming backend data in the gateway state machine 
+	// Incoming backend data in the gateway 
 	if(modem_dequeue_incoming(puint8incomingbackenddata, &length)){//check any incoming data sockets from the Backend
 		//TODO: find a  way to deal with wrong incomming data
 			switch( *puint8incomingbackenddata[0] ){
