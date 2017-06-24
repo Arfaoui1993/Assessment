@@ -120,7 +120,6 @@ void handle_communication(void)
 				//the sensor should be prepared to receive 4 consecutive data pockets coontaining newki.
 				timeout=GATEWAY_TIMEOUT_COUNTER;
 				while((false==wireless_dequeue_incoming(device_id, uint8sensordata))&&(timeout!=0)){
-				//gateway should receive an Ack from the sensor that it will receive the ping	
 						timeout--;
 					}
 				if((0==timeout)||(ACK_BACKEND!=uint8sensordata[0])){
@@ -132,7 +131,6 @@ void handle_communication(void)
 				//backend should start sending another socket that contain newKI data
 				timeout=GATEWAY_TIMEOUT_COUNTER;
 				while((false==modem_dequeue_incoming(puint8incomingbackenddata, &length))&&(timeout!=0)){
-				//gateway should receive an Ack from the sensor that it will receive the ping	
 						timeout--;
 					}
 				if(0==timeout){
@@ -154,7 +152,6 @@ void handle_communication(void)
 				//wait for ack that data being sent from gateway are received in the sensor
 				timeout=GATEWAY_TIMEOUT_COUNTER;
 				while((false==wireless_dequeue_incoming(device_id, uint8sensordata))&&(timeout!=0)){
-				//gateway should receive an Ack from the sensor that it will receive the ping
 										timeout--;
 					}
 				if((timeout==0)||(ACK_BACKEND!=uint8sensordata[0])){
@@ -165,15 +162,12 @@ void handle_communication(void)
 				}
 			break;
 			case(DELETE_KI):{
-
-				
 				uint8sensordatatosend[0] = DELETE_KI;		
 				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send delete ki command to sensor
 								
 				//the sensor should delete the ki and send an ack.
 				timeout=GATEWAY_TIMEOUT_COUNTER;
 				while((false==wireless_dequeue_incoming(device_id, uint8sensordata))&&(timeout!=0)){
-				//gateway should receive an Ack from the sensor that it will receive the ping	
 						timeout--;
 					}
 				if((0==timeout)||(ACK_BACKEND!=uint8sensordata[0])){
@@ -184,15 +178,35 @@ void handle_communication(void)
 				}
 			break;
 			case(OPEN_DOOR):{
-				//modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend
 				uint8sensordatatosend[0] = OPEN_DOOR;
 				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send open door command to sensor
+				
+				//the sensor should open the door and send an ack.
+				timeout=GATEWAY_TIMEOUT_COUNTER;
+				while((false==wireless_dequeue_incoming(device_id, uint8sensordata))&&(timeout!=0)){	
+						timeout--;
+					}
+				if((0==timeout)||(ACK_BACKEND!=uint8sensordata[0])){
+				break;//if timeout is passed and ack from sensor is not received
+				}else{
+				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway sends sensor ACK to backend, the door is open		
+				}
 				}
 			break;
 			case(CLOSE_DOOR):{
-				//modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend
 				uint8sensordatatosend[0] = CLOSE_DOOR;
 				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send close door command to sensor
+				
+				//the sensor should close the door and send an ack.
+				timeout=GATEWAY_TIMEOUT_COUNTER;
+				while((false==wireless_dequeue_incoming(device_id, uint8sensordata))&&(timeout!=0)){	
+						timeout--;
+					}
+				if((0==timeout)||(ACK_BACKEND!=uint8sensordata[0])){
+				break;//if timeout is passed and ack from sensor is not received
+				}else{
+				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway sends sensor ACK to backend, the door is open		
+				}
 				}
 			break;
 			}
