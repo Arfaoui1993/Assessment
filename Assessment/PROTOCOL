@@ -5,23 +5,29 @@
 //--------------------------------------------------------------------------------------------
 /**
 The first byte of data sent from backend to gateway or from gateway to sensor should contain
-on of the commands that are defined in here
+on of the commands that are defined in here.
+All starting bits should contain 
 */
 //--------------------------------------------------------------------------------------------
 
 
 //-----------------------------
-// Commands Common Dictionary
+// Common Commands Dictionary
 //-----------------------------
 # define PING_GATEWAY					0x01
 # define PING_SENSOR					0x02
 //Ping data should not exceed 127 bytes
 
-
+# define PINGBYTE					0x03
 # define RESTART_SENSOR					0x04
 # define RESTART_GATEWAY				0x05
+
+
 # define ADD_NEWKI_TO_SENSOR				0x08
+//when sending newki data to sensor, the backend should send 2 data pockets of 128 bytes, the first contain only the command.The second contain data
+//the sensor should send an aknowledgement when it receives the entire data(in 5 pockets of 32 bytes)
+
 # define DELETE_KI					0x0A
 # define OPEN_DOOR					0x0F
 # define ACK_BACKEND					0x11
-# define BREAK_COUNTER					100
+# define GATEWAY_TIMEOUT_COUNTER			100

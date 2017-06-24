@@ -20,9 +20,9 @@
 void handle_communication(void)
 {
 	const uint8_t* puint8incomingbackenddata[128];//first byte should contain a command
-	uint8_t uint8sensordata[128];//first byte should contain a command
+	uint8_t uint8sensordata[32];//first byte should contain a command
 	uint8_t uint8backenddatatosend[128];//senddata to backend buffer: first byte should contain a command data in here used to be sent to backend
-	uint8_t uint8sensordatatosend[128];//senddata to sensor buffer: first byte should contain a command data in here used to be sent to sensors
+	uint8_t uint8sensordatatosend[32];//senddata to sensor buffer: first byte should contain a command data in here used to be sent to sensors
 	uint8_t uint8AckBackend = ACK_BACKEND;
 
 	size_t length=128;
@@ -30,7 +30,7 @@ void handle_communication(void)
 
 	// Incoming backend data in the gateway state machine 
 	if(modem_dequeue_incoming(puint8incomingbackenddata, &length)){//check any incoming data sockets from the Backend
-		//TODO: fing a  way to deal with wrong incomming data
+		//TODO: find a  way to deal with wrong incomming data
 			switch( *puint8incomingbackenddata[0] ){
 			case(PING_GATEWAY):{
 				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend
@@ -58,9 +58,25 @@ void handle_communication(void)
 				}
 			break;
 			case(ADD_NEWKI_TO_SENSOR):{
+				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend
+				uint8sensordatatosend[0] = ADD_NEWKI_TO_SENSOR;			
+				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send add kiwi command to sensor
+				//the sensor should be prepared to receive 4 consecutive data pockets that contain the newKI data
+				while(false==modem_dequeue_incoming(puint8incomingbackenddata, &length)){//gateway should receive a new data pocket
+					}//TODO: this can block the call back, think in a better solution
+				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend of receiving the new kiwi data
+				//send 4 pockets in here
+				uint8_t uin8index=0;
+				while(uin8index<=128){
+				for(uint8_t i=uin8index;i<32+uin8index;i++){
+				uint8sensordatatosend[i-uin8index]=*puint8incomingbackenddata[i];			
+				}
+				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);
+				uin8index = uin8index + 32;
+				}
 				}
 			break;
-			case(DELETE_KI):{
+			case(DELETE_KI):{	
 				}
 			break;
 			case(OPEN_DOOR):{
