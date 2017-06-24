@@ -9,7 +9,8 @@
 # define RESTART_GATEWAY				0x05
 # define ADD_NEWKI_TO_SENSOR				0x08
 # define DELETE_KI					0x0A
-# define OPEN_DOOR					0x0F
+# define OPEN_DOOR					0x0E
+# define CLOSE_DOOR					0x0F
 # define ACK_BACKEND					0x11
 # define GATEWAY_TIMEOUT_COUNTER			100
 
@@ -38,14 +39,25 @@ void handle_communication(void)
 					uint8backenddatatosend[i]=*puint8incomingbackenddata[i];			
 					}//TODO: find better solution to this
 				modem_enqueue_outgoing(uint8backenddatatosend,128);//gateway send pong to backend
+				//TODO: clean buffer
 				}
 			break;
 			case(PING_SENSOR):{
 				//modem_enqueue_outgoing(&uint8AckBackend,128);//gateway acknowledge the backend//not needed because backend 					//needs sensor ACK
-				for(uint8_t i=0;i<128;i++){
-					uint8sensordatatosend[i]=*puint8incomingbackenddata[i];			
-					}//TODO: find better solution to this
-				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//gateway ping sensor
+				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend
+				uint8sensordatatosend[0] = PING_SENSOR;		
+				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send Ping command to sensor
+				//the sensor should be prepared to receive 4 consecutive ping data pockets.
+
+				//send 4 pockets of the ping in here
+				uint8_t uin8index=0;
+				while(uin8index<128){
+				for(uint8_t i=uin8index;i<32+uin8index;i++){
+				uint8sensordatatosend[i-uin8index]=*puint8incomingbackenddata[i];			
+				}
+				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);
+				uin8index = uin8index + 32;
+				}
 				}
 			break;
 			case(RESTART_GATEWAY):{
@@ -62,12 +74,14 @@ void handle_communication(void)
 				uint8sensordatatosend[0] = ADD_NEWKI_TO_SENSOR;			
 				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send add kiwi command to sensor
 				//the sensor should be prepared to receive 4 consecutive data pockets that contain the newKI data
-				while(false==modem_dequeue_incoming(puint8incomingbackenddata, &length)){//gateway should receive a new data pocket
+				uint8_t timeout=GATEWAY_TIMEOUT_COUNTER;
+				while((false==modem_dequeue_incoming(puint8incomingbackenddata, &length))&&(timeout!=0)){//gateway should receive a new data pocket, if timeout passed it should get out of the loop						
+						timeout--;
 					}//TODO: this can block the call back, think in a better solution
 				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend of receiving the new kiwi data
 				//send 4 pockets in here
 				uint8_t uin8index=0;
-				while(uin8index<=128){
+				while(uin8index<128){
 				for(uint8_t i=uin8index;i<32+uin8index;i++){
 				uint8sensordatatosend[i-uin8index]=*puint8incomingbackenddata[i];			
 				}
@@ -76,10 +90,21 @@ void handle_communication(void)
 				}
 				}
 			break;
-			case(DELETE_KI):{	
+			case(DELETE_KI):{
+				//modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend
+				uint8sensordatatosend[0] = DELETE_KI;
+				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send delete ki command to sensor
 				}
 			break;
 			case(OPEN_DOOR):{
+				//modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend
+				uint8sensordatatosend[0] = OPEN_DOOR;
+				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send open door command to sensor
+				}
+			case(CLOSE_DOOR):{
+				//modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend
+				uint8sensordatatosend[0] = CLOSE_DOOR;
+				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send close door command to sensor
 				}
 			break;
 			}
@@ -93,9 +118,10 @@ void handle_communication(void)
 			switch(uint8sensordata[0]){
 				case(PING_SENSOR):{//gateway receive pong sensor 
 				modem_enqueue_outgoing(uint8sensordata,128);//gateway sends the sensor pong to backend
+				//FIXME: receive 4 pockets of data and should send one pocket to backend
 				}
 				break;
-				case(ACK_BACKEND):{//gateway should should send the ACK of the sensor 
+				case(ACK_BACKEND):{//gateway should  send the ACK of the sensor 
 				modem_enqueue_outgoing(uint8sensordata,1);//gateway sends sensor ACK to backend
 				}
 				break;

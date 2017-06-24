@@ -29,5 +29,6 @@ All starting bits should contain
 
 # define DELETE_KI					0x0A
 # define OPEN_DOOR					0x0F
+# define CLOSE_DOOR					0x0F
 # define ACK_BACKEND					0x11
 # define GATEWAY_TIMEOUT_COUNTER			100
