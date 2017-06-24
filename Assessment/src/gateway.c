@@ -22,11 +22,17 @@ void handle_communication(void)
 {
 	const uint8_t* puint8incomingbackenddata[128];//first byte should contain a command
 	uint8_t uint8sensordata[32];//first byte should contain a command
+
 	uint8_t uint8backenddatatosend[128];//senddata to backend buffer: first byte should contain a command data in here used to be sent to backend
 	uint8_t uint8sensordatatosend[32];//senddata to sensor buffer: first byte should contain a command data in here used to be sent to sensors
 	uint8_t uint8AckBackend = ACK_BACKEND;
+	
+	device_id_t *device_id=NULL;
 
 	size_t length=128;
+
+	uint8_t timeout=GATEWAY_TIMEOUT_COUNTER;
+
 	// Handler should check incoming data from backend and from the sensor, data received from the backend can either go to the gateway or 		// go to the sensor. Data received from the sensor must go back to the backend through the gateway(it can be a pong(after ping), 	 // an acknowledgment,...)
 
 	// Incoming backend data in the gateway state machine 
@@ -37,19 +43,29 @@ void handle_communication(void)
 				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend
 				for(uint8_t i=0;i<128;i++){
 					uint8backenddatatosend[i]=*puint8incomingbackenddata[i];			
-					}//TODO: find better solution to this
+					}
 				modem_enqueue_outgoing(uint8backenddatatosend,128);//gateway send pong to backend
-				//TODO: clean buffer
+
+				for(uint8_t i=0;i<128;i++){
+					uint8backenddatatosend[i]=0;		 //clean send buffer	
+					}
 				}
 			break;
 			case(PING_SENSOR):{
-				//modem_enqueue_outgoing(&uint8AckBackend,128);//gateway acknowledge the backend//not needed because backend 					//needs sensor ACK
-				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend
 				uint8sensordatatosend[0] = PING_SENSOR;		
 				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send Ping command to sensor
-				//the sensor should be prepared to receive 4 consecutive ping data pockets.
 
-				//send 4 pockets of the ping in here
+				//the sensor should be prepared to receive 4 consecutive ping data pockets.
+				timeout=GATEWAY_TIMEOUT_COUNTER;
+				while((false==wireless_dequeue_incoming(device_id, uint8sensordata))&&(timeout!=0)){
+				//gateway should receive a new data pocket, if timeout passed it should get out of the 		 					//loop					
+						timeout--;
+					}
+				if((timeout==0)||(ACK_BACKEND!=uint8sensordata[0])){
+				break;
+				}
+
+				//send 4 pockets of the ping in here, after being sure that the ping command has been received by the sensor
 				uint8_t uin8index=0;
 				while(uin8index<128){
 				for(uint8_t i=uin8index;i<32+uin8index;i++){
@@ -74,10 +90,10 @@ void handle_communication(void)
 				uint8sensordatatosend[0] = ADD_NEWKI_TO_SENSOR;			
 				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send add kiwi command to sensor
 				//the sensor should be prepared to receive 4 consecutive data pockets that contain the newKI data
-				uint8_t timeout=GATEWAY_TIMEOUT_COUNTER;
-				while((false==modem_dequeue_incoming(puint8incomingbackenddata, &length))&&(timeout!=0)){//gateway should receive a new data pocket, if timeout passed it should get out of the loop						
+				timeout=GATEWAY_TIMEOUT_COUNTER;
+				while((false==modem_dequeue_incoming(puint8incomingbackenddata, &length))&&(timeout!=0)){//gateway should 					receive a new data pocket, if timeout passed it should get out of the loop						
 						timeout--;
-					}//TODO: this can block the call back, think in a better solution
+					}
 				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend of receiving the new kiwi data
 				//send 4 pockets in here
 				uint8_t uin8index=0;
@@ -109,7 +125,6 @@ void handle_communication(void)
 			break;
 			}
 	}
-		device_id_t *device_id=NULL;
 		// Incoming sensor data in the gateway state machine 
 		// if the gateway don't receive ack from the sensor, it will keep sending data
 		// TODO: Add timeout to receiving data here, if the time out is gone gateway should send the data again
@@ -128,5 +143,4 @@ void handle_communication(void)
 		}
 	}
 }
-
 }
