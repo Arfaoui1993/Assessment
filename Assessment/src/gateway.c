@@ -82,8 +82,8 @@ void handle_communication(void)
 				//wait for ack that data being sent from gateway are received in the sensor
 				timeout=GATEWAY_TIMEOUT_COUNTER;
 				while((false==wireless_dequeue_incoming(device_id, uint8sensordata))&&(timeout!=0)){
-				//gateway should receive an Ack from the sensor that it will receive the ping 					//data				
-						timeout--;
+				//gateway should receive an Ack from the sensor that it will receive the ping
+										timeout--;
 					}
 				if((timeout==0)||(ACK_BACKEND!=uint8sensordata[0])){
 				break;//if timeout is passed and ack from sensor is not received
@@ -114,15 +114,34 @@ void handle_communication(void)
 				}
 			break;
 			case(ADD_NEWKI_TO_SENSOR):{
-				//modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend
-				uint8sensordatatosend[0] = ADD_NEWKI_TO_SENSOR;			
-				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send add kiwi command to sensor
-				//the sensor should be prepared to receive 4 consecutive data pockets that contain the newKI data
+				//modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend that the command is received
+				uint8sensordatatosend[0] = ADD_NEWKI_TO_SENSOR;		
+				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send add newki command to sensor
+				
+				//the sensor should be prepared to receive 4 consecutive data pockets coontaining newki.
 				timeout=GATEWAY_TIMEOUT_COUNTER;
-				while((false==modem_dequeue_incoming(puint8incomingbackenddata, &length))&&(timeout!=0)){//gateway should 					receive a new data pocket, if timeout passed it should get out of the loop						
+				while((false==wireless_dequeue_incoming(device_id, uint8sensordata))&&(timeout!=0)){
+				//gateway should receive an Ack from the sensor that it will receive the ping	
 						timeout--;
 					}
-				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend of receiving the new kiwi data
+				if((0==timeout)||(ACK_BACKEND!=uint8sensordata[0])){
+				break;//if timeout is passed and ack from sensor is not received
+				}else{
+				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway sends sensor ACK to backend				
+				}
+				
+				//backend should start sending another socket that contain newKI data
+				timeout=GATEWAY_TIMEOUT_COUNTER;
+				while((false==modem_dequeue_incoming(puint8incomingbackenddata, &length))&&(timeout!=0)){
+				//gateway should receive an Ack from the sensor that it will receive the ping	
+						timeout--;
+					}
+				if(0==timeout){
+				break;//if timeout is passed and newKi data from backend is not received
+				}else{ //second socket of data received
+				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend of receiving the new kiwi data			
+				}
+		
 				//send 4 pockets in here
 				uin8index=0;
 				while(uin8index<128){
@@ -131,6 +150,18 @@ void handle_communication(void)
 				}
 				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);
 				uin8index = uin8index + 32;
+				}
+				
+				//wait for ack that data being sent from gateway are received in the sensor
+				timeout=GATEWAY_TIMEOUT_COUNTER;
+				while((false==wireless_dequeue_incoming(device_id, uint8sensordata))&&(timeout!=0)){
+				//gateway should receive an Ack from the sensor that it will receive the ping
+										timeout--;
+					}
+				if((timeout==0)||(ACK_BACKEND!=uint8sensordata[0])){
+				break;//if timeout is passed and ack from sensor is not received
+				}else{
+				modem_enqueue_outgoing(uint8sensordata,1);//gateway sends sensor ACK to backend				
 				}
 				}
 			break;
