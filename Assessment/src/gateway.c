@@ -60,7 +60,7 @@ void handle_communication(void)
 				//the sensor should be prepared to receive 4 consecutive ping data pockets.
 				timeout=GATEWAY_TIMEOUT_COUNTER;
 				while((false==wireless_dequeue_incoming(device_id, uint8sensordata))&&(timeout!=0)){
-				//gateway should receive an Ack from the sensor that it will receive the ping 					//data				
+				//gateway should receive an Ack from the sensor that it will receive the ping 		
 						timeout--;
 					}
 				if((timeout==0)||(ACK_BACKEND!=uint8sensordata[0])){
@@ -114,7 +114,6 @@ void handle_communication(void)
 				}
 			break;
 			case(ADD_NEWKI_TO_SENSOR):{
-				//modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend that the command is received
 				uint8sensordatatosend[0] = ADD_NEWKI_TO_SENSOR;		
 				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send add newki command to sensor
 				
@@ -166,9 +165,22 @@ void handle_communication(void)
 				}
 			break;
 			case(DELETE_KI):{
-				//modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend
-				uint8sensordatatosend[0] = DELETE_KI;
+
+				
+				uint8sensordatatosend[0] = DELETE_KI;		
 				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//Send delete ki command to sensor
+								
+				//the sensor should delete the ki and send an ack.
+				timeout=GATEWAY_TIMEOUT_COUNTER;
+				while((false==wireless_dequeue_incoming(device_id, uint8sensordata))&&(timeout!=0)){
+				//gateway should receive an Ack from the sensor that it will receive the ping	
+						timeout--;
+					}
+				if((0==timeout)||(ACK_BACKEND!=uint8sensordata[0])){
+				break;//if timeout is passed and ack from sensor is not received or the ki is not deleted
+				}else{
+				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway sends sensor ACK to backend, the ki is deleted successfuly			
+				}
 				}
 			break;
 			case(OPEN_DOOR):{
