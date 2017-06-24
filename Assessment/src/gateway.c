@@ -19,31 +19,36 @@
  */
 void handle_communication(void)
 {
-  // YOUR CODE GOES HERE
-	const uint8_t* puint8backenddata[128];//first byte should contain a command
+	const uint8_t* puint8incomingbackenddata[128];//first byte should contain a command
 	uint8_t uint8sensordata[128];//first byte should contain a command
-	uint8_t uint8AckBackend  = ACK_BACKEND;
-	uint8_t uint8PingGateway  = PING_GATEWAY;
-	uint8_t uint8PingSensor  = PING_SENSOR;
+	uint8_t uint8backenddatatosend[128];//first byte should contain a command data in here used to be sent to backend
+	uint8_t uint8sensordatatosend[128];//first byte should contain a command data in here used to be sent to sensors
+	uint8_t uint8AckBackend = ACK_BACKEND;
 
 	size_t length=128;
 	
 	// Incoming backend data in the gateway state machine 
-	if(modem_dequeue_incoming(puint8backenddata, &length)){//check any incoming data sockets from the Backend
+	if(modem_dequeue_incoming(puint8incomingbackenddata, &length)){//check any incoming data sockets from the Backend
 		//TODO: fing a  way to deal with wrong incomming data
-			switch( *puint8backenddata[0] ){
+			switch( *puint8incomingbackenddata[0] ){
 			case(PING_GATEWAY):{
-				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway ack the backend
-				modem_enqueue_outgoing(&uint8PingGateway,1);//gateway send pong to backend
+				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway acknowledge the backend
+				for(uint8_t i=0;i<128;i++){
+					uint8backenddatatosend[i]=*puint8incomingbackenddata[i];			
+					}//TODO: find better solution to this
+				modem_enqueue_outgoing(uint8backenddatatosend,128);//gateway send pong to backend
 				}
 			break;
 			case(PING_SENSOR):{
-				modem_enqueue_outgoing(&uint8AckBackend,1);//gateway ack the backend
-				wireless_enqueue_outgoing(get_device_id(),&uint8PingSensor);//gateway ping sensor
+				modem_enqueue_outgoing(&uint8AckBackend,128);//gateway acknowledge the backend
+				for(uint8_t i=0;i<128;i++){
+					uint8sensordatatosend[i]=*puint8incomingbackenddata[i];			
+					}//TODO: find better solution to this
+				wireless_enqueue_outgoing(get_device_id(),uint8sensordatatosend);//gateway ping sensor
 				device_id_t *device_id=NULL;
 				wireless_dequeue_incoming(device_id,uint8sensordata);
-				if( PING_SENSOR==uint8sensordata[0] ){//gateway receive pong sensor 
-				modem_enqueue_outgoing(&uint8PingSensor,1);//gateway sends pong senor to backend
+				if( (PING_SENSOR==uint8sensordata[0]) && (NULL!=device_id) ){//gateway receive pong sensor 
+				modem_enqueue_outgoing(uint8sensordata,128);//gateway sends pong senor to backend
 				}
 				}
 			break;

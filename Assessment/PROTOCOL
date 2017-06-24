@@ -15,6 +15,9 @@ on of the commands that are defined in here
 //-----------------------------
 # define PING_GATEWAY					0x01
 # define PING_SENSOR					0x02
+//Ping data should not exceed 127 bytes
+
+
 # define RESTART_SENSOR					0x04
 # define RESTART_GATEWAY				0x05
 # define ADD_NEWKI_TO_SENSOR				0x08
