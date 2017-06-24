@@ -60,10 +60,11 @@ void handle_communication(void)
 	}
 	break;
 	case(ADD_NEWKI_TO_SENSOR):{
-	//sensor should send acknowledgment	
+		    //sensor should send acknowledgment	
 			wireless_enqueue_outgoing(&uint8AckBackend);//Send Ack to gateway
 	
 				//sensor should receive 4 data sockets now and store them in uint8receivedbackenddata
+				//FIXME: receive only 1 data pockets instead of 4
 				uin8index=0;
 				while(uin8index<128){
 				for(uint8_t i=uin8index;i<32+uin8index;i++){
@@ -88,6 +89,8 @@ void handle_communication(void)
 			wireless_enqueue_outgoing(&uint8AckBackend);//Send Ack to gateway
 	
 				//sensor should receive 4 data sockets now and store them in uint8receivedbackenddata
+				//FIXME: receive only 1 data pockets instead of 4
+
 				uin8index=0;
 				while(uin8index<128){
 				for(uint8_t i=uin8index;i<32+uin8index;i++){
@@ -107,6 +110,18 @@ void handle_communication(void)
 				}
 	break;
 			}
+				case(OPEN_DOOR):{
+				door_trigger();
+				//sensor should send acknowledgment	
+				wireless_enqueue_outgoing(&uint8AckBackend);//Send Ack to gateway			
+				}
+				break;
+				case(CLOSE_DOOR):{
+				door_trigger();
+				//sensor should send acknowledgment	
+				wireless_enqueue_outgoing(&uint8AckBackend);//Send Ack to gateway			
+				}
+				break;
 		}
 	}
 }
