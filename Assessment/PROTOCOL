@@ -6,7 +6,6 @@
 /**
 The first byte of data sent from backend to gateway or from gateway to sensor should contain
 on of the commands that are defined in here.
-All starting bits should contain 
 */
 //--------------------------------------------------------------------------------------------
 
@@ -19,7 +18,7 @@ All starting bits should contain
 //--------------
 // Ping Gateway
 //--------------
-		 Ping Pocket:command+ping data
+	 Ping Pocket:command+ping data
 Backend ------------------------------> Gateway 
 		      ACK
 	<------------------------------
@@ -111,4 +110,5 @@ Backend ------------------------------> Gateway ------------------------> Sensor
 # define OPEN_DOOR					0x0F
 # define CLOSE_DOOR					0x0F
 # define ACK_BACKEND					0x11
-# define GATEWAY_TIMEOUT_COUNTER		100
+# define GATEWAY_TIMEOUT_COUNTER			100
+# define SENSOR_TIMEOUT_COUNTER				100

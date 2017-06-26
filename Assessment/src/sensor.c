@@ -5,15 +5,15 @@
 
 # define PING_GATEWAY					0x01
 # define PING_SENSOR					0x02
-# define PINGBYTE						0x03
+# define PINGBYTE					0x03
 # define RESTART_SENSOR					0x04
 # define RESTART_GATEWAY				0x05
-# define ADD_NEWKI_TO_SENSOR			0x08
-# define DELETE_KI						0x0A
-# define OPEN_DOOR						0x0E
-# define CLOSE_DOOR						0x0F
+# define ADD_NEWKI_TO_SENSOR				0x08
+# define DELETE_KI					0x0A
+# define OPEN_DOOR					0x0E
+# define CLOSE_DOOR					0x0F
 # define ACK_BACKEND					0x11
-# define GATEWAY_TIMEOUT_COUNTER		100
+# define SENSOR_TIMEOUT_COUNTER				100
 
 /**
  * This function is polled by the main loop and should handle any packets coming
@@ -25,6 +25,7 @@ void handle_communication(void)
 	uint8_t uint8sensorpocketdata[32];//send/receivedata sensor buffer: first byte should contain a command data in here used to be sent to sensors
 	uint8_t uint8AckBackend = ACK_BACKEND;
 	uint8_t uin8index=0;
+	uint8_t timeout=SENSOR_TIMEOUT_COUNTER;
 	
 	if(wireless_dequeue_incoming(uint8sensorpocketdata)){
 		switch( uint8sensorpocketdata[0] ){
@@ -34,14 +35,15 @@ void handle_communication(void)
 			
 			//sensor should receive 4 data sockets now and store them in uint8receivedbackenddata
 				uin8index=0;
-				while(uin8index<128){
+				while( (uin8index<128)&&(timeout>0) ){
 				if(wireless_dequeue_incoming(uint8sensorpocketdata)){
+				timeout=SENSOR_TIMEOUT_COUNTER;//timeout should be initialized again
 				for(uint8_t i=uin8index;i<32+uin8index;i++){
 				uint8receivedbackenddata[i]=uint8sensorpocketdata[i-uin8index];			
 						}
 				uin8index = uin8index + 32;
 					}
-					//FIXME: program can bloc in here if there is no data received
+				timeout--;
 				}
 				
 			//After receiving the 4 data pockets, the sensor will send them again pocket by pocket
@@ -66,14 +68,15 @@ void handle_communication(void)
 				//sensor should receive 4 data sockets now and store them in uint8receivedbackenddata
 				//FIXME: receive only 1 data pockets instead of 4
 				uin8index=0;
-				while(uin8index<128){
+				uint8_t timeout=SENSOR_TIMEOUT_COUNTER;
+				while( (uin8index<128)&&(timeout>0) ){
 				for(uint8_t i=uin8index;i<32+uin8index;i++){
 				if(wireless_dequeue_incoming(uint8sensorpocketdata)){
 				uint8receivedbackenddata[i]=uint8sensorpocketdata[i-uin8index];			
 						}
 				uin8index = uin8index + 32;
 					}
-					//FIXME: program can bloc in here if there is no data received
+				timeout--;
 				}
 				uint8_t uint8ki[16];
 				for(uint8_t i=0;i<16;i++){
@@ -92,14 +95,15 @@ void handle_communication(void)
 				//FIXME: receive only 1 data pockets instead of 4
 
 				uin8index=0;
-				while(uin8index<128){
+				uint8_t timeout=SENSOR_TIMEOUT_COUNTER;
+				while( (uin8index<128)&&(timeout>0) ){
 				for(uint8_t i=uin8index;i<32+uin8index;i++){
 				if(wireless_dequeue_incoming(uint8sensorpocketdata)){
 				uint8receivedbackenddata[i]=uint8sensorpocketdata[i-uin8index];			
 						}
 				uin8index = uin8index + 32;
 					}
-					//FIXME: program can bloc in here if there is no data received
+				timeout--;
 				}
 				uint8_t uint8ki[16];
 				for(uint8_t i=0;i<16;i++){

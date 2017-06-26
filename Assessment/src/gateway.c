@@ -4,15 +4,15 @@
 
 # define PING_GATEWAY					0x01
 # define PING_SENSOR					0x02
-# define PINGBYTE						0x03
+# define PINGBYTE					0x03
 # define RESTART_SENSOR					0x04
 # define RESTART_GATEWAY				0x05
-# define ADD_NEWKI_TO_SENSOR			0x08
-# define DELETE_KI						0x0A
-# define OPEN_DOOR						0x0E
-# define CLOSE_DOOR						0x0F
+# define ADD_NEWKI_TO_SENSOR				0x08
+# define DELETE_KI					0x0A
+# define OPEN_DOOR					0x0E
+# define CLOSE_DOOR					0x0F
 # define ACK_BACKEND					0x11
-# define GATEWAY_TIMEOUT_COUNTER		100
+# define GATEWAY_TIMEOUT_COUNTER			100
 
 /**
  * This function is polled by the main loop and should handle any packets coming
